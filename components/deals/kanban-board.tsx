@@ -2,10 +2,9 @@
 
 import { Deal } from "@/lib/db/deals";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge"; // We might need to install badge
 import Link from "next/link";
-import { Edit, DollarSign, Calendar } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Edit, Calendar } from "lucide-react";
+import { DealActions } from "@/components/deals/deal-actions";
 
 interface KanbanBoardProps {
     deals: Deal[];
@@ -39,12 +38,10 @@ export function KanbanBoard({ deals }: KanbanBoardProps) {
                             {stageDeals.map((deal) => (
                                 <Card key={deal.id} className="cursor-pointer hover:shadow-md transition-shadow">
                                     <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between space-y-0">
-                                        <CardTitle className="text-sm font-medium leading-none truncate">
+                                        <CardTitle className="text-sm font-medium leading-none truncate w-[200px]">
                                             {deal.title}
                                         </CardTitle>
-                                        <Link href={`/dashboard/deals/${deal.id}/edit`}>
-                                            <Edit className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                                        </Link>
+                                        <DealActions dealId={deal.id} />
                                     </CardHeader>
                                     <CardContent className="p-4 pt-2">
                                         <div className="flex items-center justify-between mb-2">
