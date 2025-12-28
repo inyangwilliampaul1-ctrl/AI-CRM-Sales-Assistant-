@@ -6,7 +6,7 @@ export default function IndexPage() {
                     Build your next idea even faster.
                 </h1>
                 <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
-                    A production-ready Next.js 14 SaaS starter composed of everything you need to build your SaaS.
+                    A production-ready AI CRM Sales Assistant composed of everything you need to build your SaaS.
                 </p>
                 <div className="space-x-4">
                     <a href="/login" className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">

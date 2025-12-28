@@ -1,3 +1,6 @@
+import { Button } from "@/components/ui/button";
+import { signout } from "../(auth)/actions";
+
 export default function DashboardLayout({
     children,
 }: {
@@ -10,12 +13,16 @@ export default function DashboardLayout({
                     <div className="flex gap-6 md:gap-10">
                         <a href="/" className="hidden items-center space-x-2 md:flex">
                             <span className="hidden font-bold sm:inline-block">
-                                SaaS Starter
+                                AI CRM Sales Assistant
                             </span>
                         </a>
                     </div>
                     <div className="flex items-center space-x-4">
-                        {/* User Nav would go here */}
+                        <form action={signout}>
+                            <Button variant="ghost" size="sm">
+                                Sign Out
+                            </Button>
+                        </form>
                         <div className="h-8 w-8 rounded-full bg-secondary"></div>
                     </div>
                 </div>

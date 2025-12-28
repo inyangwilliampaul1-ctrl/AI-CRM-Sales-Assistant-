@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SaaS Starter",
-  description: "Production ready Next.js 14 SaaS Starter",
+  title: "AI CRM Sales Assistant",
+  description: "Production ready AI CRM Sales Assistant",
 };
 
 export default function RootLayout({

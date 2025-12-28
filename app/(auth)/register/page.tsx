@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { signup } from "../actions";
 
 export default function RegisterPage() {
     return (
@@ -17,7 +18,7 @@ export default function RegisterPage() {
                 </p>
             </div>
             <div className="grid gap-6">
-                <form>
+                <form action={signup}>
                     <div className="grid gap-2">
                         <div className="grid gap-1 text-left">
                             <label className="sr-only" htmlFor="email">
@@ -25,15 +26,30 @@ export default function RegisterPage() {
                             </label>
                             <input
                                 id="email"
+                                name="email"
                                 placeholder="name@example.com"
                                 type="email"
                                 autoCapitalize="none"
                                 autoComplete="email"
                                 autoCorrect="off"
+                                required
                                 className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             />
                         </div>
-                        <Button>Sign Up with Email</Button>
+                        <div className="grid gap-1 text-left">
+                            <label className="sr-only" htmlFor="password">
+                                Password
+                            </label>
+                            <input
+                                id="password"
+                                name="password"
+                                placeholder="Password"
+                                type="password"
+                                required
+                                className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            />
+                        </div>
+                        <Button>Sign Up</Button>
                     </div>
                 </form>
             </div>

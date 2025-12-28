@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { login } from "../actions";
 
 export default function LoginPage() {
     return (
@@ -17,7 +18,7 @@ export default function LoginPage() {
                 </p>
             </div>
             <div className="grid gap-6">
-                <form>
+                <form action={login}>
                     <div className="grid gap-2">
                         <div className="grid gap-1 text-left">
                             <label className="sr-only" htmlFor="email">
@@ -25,30 +26,32 @@ export default function LoginPage() {
                             </label>
                             <input
                                 id="email"
+                                name="email"
                                 placeholder="name@example.com"
                                 type="email"
                                 autoCapitalize="none"
                                 autoComplete="email"
                                 autoCorrect="off"
+                                required
                                 className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             />
                         </div>
-                        <Button>Sign In with Email</Button>
+                        <div className="grid gap-1 text-left">
+                            <label className="sr-only" htmlFor="password">
+                                Password
+                            </label>
+                            <input
+                                id="password"
+                                name="password"
+                                placeholder="Password"
+                                type="password"
+                                required
+                                className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            />
+                        </div>
+                        <Button>Sign In</Button>
                     </div>
                 </form>
-                <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">
-                            Or continue with
-                        </span>
-                    </div>
-                </div>
-                <Button variant="outline" type="button" disabled>
-                    GitHub
-                </Button>
             </div>
             <p className="px-8 text-center text-sm text-muted-foreground">
                 <Link href="/register" className="hover:text-brand underline underline-offset-4">
