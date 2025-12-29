@@ -6,15 +6,48 @@ import { getCustomer } from "@/lib/db/customers";
 import { getDealsByCustomer, getDeal } from "@/lib/db/deals";
 import { getTicketsByCustomer } from "@/lib/db/tickets";
 
-export async function generateCustomerSummary(customerId: string) {
+// --- Mock Data Generators for Fallback Mode ---
+function getMockSummary(name: string) {
+    return `[SIMULATION MODE] ${name} has been a loyal customer with high engagement. They have recently closed 2 major deals and have 1 active ticket regarding billing. Key opportunity: Upsell premium support package.`;
+}
+
+function getMockNextAction() {
+    return "[SIMULATION MODE] Schedule a follow-up call to discuss the contract terms. The deal is in the negotiation phase, and a personal touch could close it by Friday.";
+}
+
+function getMockDraft(name: string, intent: string) {
+    return `[SIMULATION] Hi ${name},\n\nI hope you're having a great week! I wanted to quickly touch base regarding ${intent}. Let me know if you have a moment to chat.\n\nBest,\n[Your Name]`;
+}
+
+async function handleAiGeneration(prompt: string, fallback: string) {
     try {
-        const customer = await getCustomer(customerId);
-        if (!customer) return "Customer not found.";
+        const { text } = await generateText({
+            model: openai("gpt-4o"),
+            prompt: prompt,
+        });
+        return text;
+    } catch (error: any) {
+        console.error("AI API Error:", error);
 
-        const deals = await getDealsByCustomer(customerId);
-        const tickets = await getTicketsByCustomer(customerId);
+        // Check for Quota Exceeded (429) or other API errors
+        if (error.message?.includes("429") || error.message?.includes("quota") || error.message?.includes("billing")) {
+            console.warn("OpenAI Quota Exceeded. Switching to Simulation Mode.");
+            return fallback;
+        }
 
-        const prompt = `
+        // Return error message for other issues (e.g. invalid key)
+        return `Error: ${error.message}. (Check API Key)`;
+    }
+}
+
+export async function generateCustomerSummary(customerId: string) {
+    const customer = await getCustomer(customerId);
+    if (!customer) return "Customer not found.";
+
+    const deals = await getDealsByCustomer(customerId);
+    const tickets = await getTicketsByCustomer(customerId);
+
+    const prompt = `
         You are an expert sales assistant. Analyze this customer and provide a concise summary (max 3-4 sentences).
         Highlight key opportunities, risks (open tickets), and total value.
         
@@ -30,30 +63,18 @@ export async function generateCustomerSummary(customerId: string) {
         Support History:
         - Total Tickets: ${tickets.length}
         - Open Tickets: ${tickets.filter(t => t.status === 'open' || t.status === 'pending').length}
-        - Latest Ticket: ${tickets[0]?.title || 'None'}
-        `;
+    `;
 
-        const { text } = await generateText({
-            model: openai("gpt-4o"),
-            prompt: prompt,
-        });
-
-        return text;
-    } catch (error: any) {
-        console.error("AI Error:", error);
-        return "Unable to generate summary. Please check your API key.";
-    }
+    return handleAiGeneration(prompt, getMockSummary(`${customer.first_name} ${customer.last_name}`));
 }
 
 export async function generateNextAction(dealId: string) {
-    try {
-        const deal = await getDeal(dealId);
-        if (!deal) return "Deal not found.";
+    const deal = await getDeal(dealId);
+    if (!deal) return "Deal not found.";
 
-        // We could fetch customer info too for context
-        const customerString = deal.customer_id ? `linked to customer ID ${deal.customer_id}` : "no customer linked";
+    const customerString = deal.customer_id ? `linked to customer ID ${deal.customer_id}` : "no customer linked";
 
-        const prompt = `
+    const prompt = `
         Suggest the single most important next action to move this deal forward. Be specific and actionable (Start with a verb like "Call", "Email", "Schedule").
         
         Deal: ${deal.title}
@@ -61,41 +82,22 @@ export async function generateNextAction(dealId: string) {
         Stage: ${deal.stage}
         Expected Close: ${deal.expected_close_date || 'Unknown'}
         Context: ${customerString}
-        `;
+    `;
 
-        const { text } = await generateText({
-            model: openai("gpt-4o"),
-            prompt: prompt,
-        });
-
-        return text;
-    } catch (error: any) {
-        console.error("AI Error:", error);
-        return "Unable to generate recommendation.";
-    }
+    return handleAiGeneration(prompt, getMockNextAction());
 }
 
 export async function generateMessageDraft(customerId: string, intent: string) {
-    try {
-        const customer = await getCustomer(customerId);
-        if (!customer) return "Customer not found.";
+    const customer = await getCustomer(customerId);
+    if (!customer) return "Customer not found.";
 
-        const prompt = `
+    const prompt = `
         Draft a short, professional WhatsApp message to this customer.
         Intent: ${intent}
         
         Customer: ${customer.first_name} ${customer.last_name}
         Company: ${customer.company_name}
-        `;
+    `;
 
-        const { text } = await generateText({
-            model: openai("gpt-4o"),
-            prompt: prompt,
-        });
-
-        return text;
-    } catch (error: any) {
-        console.error("AI Error:", error);
-        return "Unable to generate draft.";
-    }
+    return handleAiGeneration(prompt, getMockDraft(`${customer.first_name}`, intent));
 }
