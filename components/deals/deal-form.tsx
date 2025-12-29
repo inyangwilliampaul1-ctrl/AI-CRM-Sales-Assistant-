@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { createDealAction, updateDealAction } from "@/app/dashboard/deals/actions";
+import { createDealAction, updateDealAction, ActionState } from "@/app/dashboard/deals/actions";
 import { Deal } from "@/lib/db/deals";
 import { Customer } from "@/lib/db/customers";
 import { Loader2 } from "lucide-react";
@@ -20,7 +20,8 @@ export function DealForm({ deal, customers }: DealFormProps) {
         ? updateDealAction.bind(null, deal.id)
         : createDealAction;
 
-    const [state, formAction, isPending] = useActionState(action, {});
+    const initialState: ActionState = {};
+    const [state, formAction, isPending] = useActionState(action, initialState);
 
     return (
         <Card className="w-full max-w-2xl mx-auto">

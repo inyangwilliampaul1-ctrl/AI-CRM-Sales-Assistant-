@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea"; // Need to ensure Textarea exists or use Input for simple description
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { createTicketAction, updateTicketAction } from "@/app/dashboard/tickets/actions";
+import { createTicketAction, updateTicketAction, ActionState } from "@/app/dashboard/tickets/actions";
 import { Ticket } from "@/lib/db/tickets";
 import { Customer } from "@/lib/db/customers";
 import { Loader2 } from "lucide-react";
@@ -21,7 +21,8 @@ export function TicketForm({ ticket, customers }: TicketFormProps) {
         ? updateTicketAction.bind(null, ticket.id)
         : createTicketAction;
 
-    const [state, formAction, isPending] = useActionState(action, {});
+    const initialState: ActionState = {};
+    const [state, formAction, isPending] = useActionState(action, initialState);
 
     return (
         <Card className="w-full max-w-2xl mx-auto">

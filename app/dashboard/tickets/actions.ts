@@ -9,7 +9,7 @@ export type ActionState = {
     success?: boolean;
 };
 
-export async function createTicketAction(prevState: ActionState, formData: FormData) {
+export async function createTicketAction(prevState: ActionState, formData: FormData): Promise<ActionState> {
     try {
         const rawData = {
             title: formData.get("title") as string,
@@ -32,7 +32,7 @@ export async function createTicketAction(prevState: ActionState, formData: FormD
     redirect("/dashboard/tickets");
 }
 
-export async function updateTicketAction(id: string, prevState: ActionState, formData: FormData) {
+export async function updateTicketAction(id: string, prevState: ActionState, formData: FormData): Promise<ActionState> {
     try {
         const rawData = {
             title: formData.get("title") as string,

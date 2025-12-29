@@ -9,7 +9,7 @@ export type ActionState = {
     success?: boolean;
 };
 
-export async function createCustomerAction(prevState: ActionState, formData: FormData) {
+export async function createCustomerAction(prevState: ActionState, formData: FormData): Promise<ActionState> {
     try {
         const rawData = {
             first_name: formData.get("first_name") as string,
@@ -34,7 +34,7 @@ export async function createCustomerAction(prevState: ActionState, formData: For
     redirect("/dashboard/customers");
 }
 
-export async function updateCustomerAction(id: string, prevState: ActionState, formData: FormData) {
+export async function updateCustomerAction(id: string, prevState: ActionState, formData: FormData): Promise<ActionState> {
     try {
         const rawData = {
             first_name: formData.get("first_name") as string,

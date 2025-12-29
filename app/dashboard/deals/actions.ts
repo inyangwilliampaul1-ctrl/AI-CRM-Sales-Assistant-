@@ -9,7 +9,7 @@ export type ActionState = {
     success?: boolean;
 };
 
-export async function createDealAction(prevState: ActionState, formData: FormData) {
+export async function createDealAction(prevState: ActionState, formData: FormData): Promise<ActionState> {
     try {
         const rawData = {
             title: formData.get("title") as string,
@@ -36,7 +36,7 @@ export async function createDealAction(prevState: ActionState, formData: FormDat
     redirect("/dashboard/deals");
 }
 
-export async function updateDealAction(id: string, prevState: ActionState, formData: FormData) {
+export async function updateDealAction(id: string, prevState: ActionState, formData: FormData): Promise<ActionState> {
     try {
         const rawData = {
             title: formData.get("title") as string,

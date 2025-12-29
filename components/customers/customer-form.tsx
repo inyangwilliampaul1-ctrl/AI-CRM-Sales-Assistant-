@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { createCustomerAction, updateCustomerAction } from "@/app/dashboard/customers/actions";
+import { createCustomerAction, updateCustomerAction, ActionState } from "@/app/dashboard/customers/actions";
 import { Customer } from "@/lib/db/customers";
 import { Loader2 } from "lucide-react";
 
@@ -20,7 +20,8 @@ export function CustomerForm({ customer }: CustomerFormProps) {
         ? updateCustomerAction.bind(null, customer.id)
         : createCustomerAction;
 
-    const [state, formAction, isPending] = useActionState(action, {});
+    const initialState: ActionState = {};
+    const [state, formAction, isPending] = useActionState(action, initialState);
 
     return (
         <Card className="w-full max-w-2xl mx-auto">

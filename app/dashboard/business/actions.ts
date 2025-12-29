@@ -12,7 +12,7 @@ export async function createBusiness(formData: FormData) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-        return { error: "User not authenticated" };
+        throw new Error("User not authenticated");
     }
 
     const { error } = await supabase.from("businesses").insert({
@@ -21,7 +21,8 @@ export async function createBusiness(formData: FormData) {
     });
 
     if (error) {
-        return { error: error.message };
+        console.error("Error creating business:", error);
+        throw new Error(error.message);
     }
 
     revalidatePath("/dashboard/business");
@@ -37,7 +38,7 @@ export async function updateBusiness(formData: FormData) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-        return { error: "User not authenticated" };
+        throw new Error("User not authenticated");
     }
 
     // RLS policies ensure user can only update their own business, 
@@ -52,7 +53,8 @@ export async function updateBusiness(formData: FormData) {
         .eq("user_id", user.id);
 
     if (error) {
-        return { error: error.message };
+        console.error("Error updating business:", error);
+        throw new Error(error.message);
     }
 
     revalidatePath("/dashboard/business");
