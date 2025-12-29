@@ -51,9 +51,8 @@ export async function signup(prevState: any, formData: FormData) {
         return { error: error.message };
     }
 
-    console.log("Signup successful, redirecting...");
-    revalidatePath("/", "layout");
-    redirect("/dashboard");
+    console.log("Signup successful, waiting for confirmation...");
+    return { success: true };
 }
 
 export async function signout() {

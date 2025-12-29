@@ -5,8 +5,12 @@ import Link from "next/link";
 import { signup } from "../actions";
 import { useActionState } from "react";
 
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { useRouter } from "next/navigation";
+
 export default function RegisterPage() {
     const [state, formAction, isPending] = useActionState(signup, null);
+    const router = useRouter();
 
     return (
         <div className="flex flex-col space-y-6 text-center">
@@ -68,6 +72,13 @@ export default function RegisterPage() {
                     Already have an account? Sign In
                 </Link>
             </p>
+            <ConfirmationDialog
+                isOpen={state?.success === true}
+                title="Check your email"
+                message="We've sent you a confirmation link. Please check your email to verify your account before logging in."
+                buttonText="Go to Login"
+                onConfirm={() => router.push("/login")}
+            />
         </div>
     );
 }
