@@ -44,7 +44,7 @@ export default function RegisterPage() {
                 href="/"
                 className="absolute left-4 top-4 md:left-8 md:top-8 text-sm font-medium text-muted-foreground hover:text-primary"
             >
-                Back
+                ← Back
             </Link>
 
             {/* Header */}
@@ -53,7 +53,7 @@ export default function RegisterPage() {
                     Create your account
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                    Get started with your CRM in minutes
+                    Start managing customers, deals, and support in one place.
                 </p>
             </div>
 
@@ -61,60 +61,56 @@ export default function RegisterPage() {
             <div className="grid gap-6">
                 <form action={formAction}>
                     <div className="grid gap-4">
-                        {/* Personal Information Section */}
-                        <div className="space-y-4">
-                            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                                Personal Information
-                            </h3>
+                        {/* Full Name */}
+                        <div className="grid gap-1.5">
+                            <label htmlFor="full_name" className="text-sm font-medium">
+                                Full Name <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                id="full_name"
+                                name="full_name"
+                                placeholder="John Doe"
+                                type="text"
+                                required
+                                className={inputClassName}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                This will be shown inside your dashboard.
+                            </p>
+                        </div>
 
-                            {/* Full Name */}
-                            <div className="grid gap-1">
-                                <label htmlFor="full_name" className="text-sm font-medium">
-                                    Full Name <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    id="full_name"
-                                    name="full_name"
-                                    placeholder="John Doe"
-                                    type="text"
-                                    required
-                                    className={inputClassName}
-                                />
-                            </div>
+                        {/* Email */}
+                        <div className="grid gap-1.5">
+                            <label htmlFor="email" className="text-sm font-medium">
+                                Email <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                id="email"
+                                name="email"
+                                placeholder="name@example.com"
+                                type="email"
+                                autoCapitalize="none"
+                                autoComplete="email"
+                                autoCorrect="off"
+                                required
+                                className={inputClassName}
+                            />
+                        </div>
 
-                            {/* Email */}
-                            <div className="grid gap-1">
-                                <label htmlFor="email" className="text-sm font-medium">
-                                    Email <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    id="email"
-                                    name="email"
-                                    placeholder="name@example.com"
-                                    type="email"
-                                    autoCapitalize="none"
-                                    autoComplete="email"
-                                    autoCorrect="off"
-                                    required
-                                    className={inputClassName}
-                                />
-                            </div>
-
-                            {/* Password */}
-                            <div className="grid gap-1">
-                                <label htmlFor="password" className="text-sm font-medium">
-                                    Password <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    id="password"
-                                    name="password"
-                                    placeholder="Create a strong password"
-                                    type="password"
-                                    required
-                                    minLength={6}
-                                    className={inputClassName}
-                                />
-                            </div>
+                        {/* Password */}
+                        <div className="grid gap-1.5">
+                            <label htmlFor="password" className="text-sm font-medium">
+                                Password <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                id="password"
+                                name="password"
+                                placeholder="Create a strong password"
+                                type="password"
+                                required
+                                minLength={6}
+                                className={inputClassName}
+                            />
                         </div>
 
                         {/* Divider */}
@@ -124,94 +120,96 @@ export default function RegisterPage() {
                             </div>
                         </div>
 
-                        {/* Business Information Section */}
-                        <div className="space-y-4">
-                            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                                Business Information
-                            </h3>
+                        {/* Business Name */}
+                        <div className="grid gap-1.5">
+                            <label htmlFor="business_name" className="text-sm font-medium">
+                                Business Name <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                id="business_name"
+                                name="business_name"
+                                placeholder="Acme Inc."
+                                type="text"
+                                required
+                                className={inputClassName}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Used to personalize your CRM workspace.
+                            </p>
+                        </div>
 
-                            {/* Business Name */}
-                            <div className="grid gap-1">
-                                <label htmlFor="business_name" className="text-sm font-medium">
-                                    Business Name <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    id="business_name"
-                                    name="business_name"
-                                    placeholder="Acme Inc."
-                                    type="text"
-                                    required
-                                    className={inputClassName}
-                                />
-                            </div>
-
-                            {/* Industry & Team Size Row */}
-                            <div className="grid grid-cols-2 gap-4">
-                                {/* Industry */}
-                                <div className="grid gap-1">
-                                    <label htmlFor="industry" className="text-sm font-medium">
-                                        Industry <span className="text-red-500">*</span>
-                                    </label>
-                                    <select
-                                        id="industry"
-                                        name="industry"
-                                        required
-                                        defaultValue=""
-                                        className={selectClassName}
-                                    >
-                                        <option value="" disabled>
-                                            Select industry
-                                        </option>
-                                        {INDUSTRIES.map((industry) => (
-                                            <option key={industry.value} value={industry.value}>
-                                                {industry.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                {/* Team Size */}
-                                <div className="grid gap-1">
-                                    <label htmlFor="team_size" className="text-sm font-medium">
-                                        Team Size <span className="text-red-500">*</span>
-                                    </label>
-                                    <select
-                                        id="team_size"
-                                        name="team_size"
-                                        required
-                                        defaultValue=""
-                                        className={selectClassName}
-                                    >
-                                        <option value="" disabled>
-                                            Select size
-                                        </option>
-                                        {TEAM_SIZES.map((size) => (
-                                            <option key={size.value} value={size.value}>
-                                                {size.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* Country */}
-                            <div className="grid gap-1">
-                                <label htmlFor="country" className="text-sm font-medium">
-                                    Country
+                        {/* Industry & Team Size Row */}
+                        <div className="grid grid-cols-2 gap-4">
+                            {/* Industry */}
+                            <div className="grid gap-1.5">
+                                <label htmlFor="industry" className="text-sm font-medium">
+                                    Industry <span className="text-red-500">*</span>
                                 </label>
                                 <select
-                                    id="country"
-                                    name="country"
-                                    defaultValue="Nigeria"
+                                    id="industry"
+                                    name="industry"
+                                    required
+                                    defaultValue=""
                                     className={selectClassName}
                                 >
-                                    {COUNTRIES.map((country) => (
-                                        <option key={country.value} value={country.value}>
-                                            {country.label}
+                                    <option value="" disabled>
+                                        Select industry
+                                    </option>
+                                    {INDUSTRIES.map((industry) => (
+                                        <option key={industry.value} value={industry.value}>
+                                            {industry.label}
                                         </option>
                                     ))}
                                 </select>
+                                <p className="text-xs text-muted-foreground">
+                                    Helps us tailor AI insights for your business.
+                                </p>
                             </div>
+
+                            {/* Team Size */}
+                            <div className="grid gap-1.5">
+                                <label htmlFor="team_size" className="text-sm font-medium">
+                                    Team Size <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    id="team_size"
+                                    name="team_size"
+                                    required
+                                    defaultValue=""
+                                    className={selectClassName}
+                                >
+                                    <option value="" disabled>
+                                        Select size
+                                    </option>
+                                    {TEAM_SIZES.map((size) => (
+                                        <option key={size.value} value={size.value}>
+                                            {size.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="text-xs text-muted-foreground">
+                                    Used for internal setup only.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Country */}
+                        <div className="grid gap-1.5">
+                            <label htmlFor="country" className="text-sm font-medium">
+                                Country
+                            </label>
+                            <select
+                                id="country"
+                                name="country"
+                                defaultValue="Nigeria"
+                                className={selectClassName}
+                            >
+                                {COUNTRIES.map((country) => (
+                                    <option key={country.value} value={country.value}>
+                                        {country.label}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         {/* Error Message */}
@@ -223,7 +221,7 @@ export default function RegisterPage() {
 
                         {/* Submit Button */}
                         <Button disabled={isPending} className="w-full mt-2">
-                            {isPending ? "Creating Account..." : "Create Account"}
+                            {isPending ? "Creating workspace..." : "Create my workspace →"}
                         </Button>
                     </div>
                 </form>
@@ -231,8 +229,9 @@ export default function RegisterPage() {
 
             {/* Login Link */}
             <p className="px-8 text-center text-sm text-muted-foreground">
-                <Link href="/login" className="hover:text-brand underline underline-offset-4">
-                    Already have an account? Sign In
+                Already have an account?{" "}
+                <Link href="/login" className="font-medium text-primary hover:underline underline-offset-4">
+                    Sign in
                 </Link>
             </p>
         </div>
