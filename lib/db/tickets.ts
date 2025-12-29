@@ -18,6 +18,18 @@ export type Ticket = {
 
 export async function getTickets() {
     const supabase = await createClient();
+
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return [];
+
+    const { data: business } = await supabase
+        .from("businesses")
+        .select("id")
+        .eq("user_id", userData.user.id)
+        .single();
+
+    if (!business) return [];
+
     const { data, error } = await supabase
         .from("tickets")
         .select(`
@@ -27,6 +39,7 @@ export async function getTickets() {
         last_name
       )
     `)
+        .eq("business_id", business.id)
         .order("created_at", { ascending: false });
 
     if (error) {
@@ -35,6 +48,7 @@ export async function getTickets() {
 
     return data as Ticket[];
 }
+
 
 export async function getTicket(id: string) {
     const supabase = await createClient();

@@ -33,9 +33,19 @@ export default function DashboardLayout({
                         <a href="/dashboard" className="group flex items-center rounded-md bg-accent px-3 py-2 text-sm font-medium text-accent-foreground hover:bg-accent hover:text-accent-foreground">
                             <span>Dashboard</span>
                         </a>
+                        <a href="/dashboard/customers" className="group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
+                            <span>Customers</span>
+                        </a>
+                        <a href="/dashboard/deals" className="group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
+                            <span>Deals</span>
+                        </a>
+                        <a href="/dashboard/tickets" className="group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
+                            <span>Tickets</span>
+                        </a>
                         <a href="/dashboard/settings" className="group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
                             <span>Settings</span>
                         </a>
+
                     </nav>
                 </aside>
                 <main className="flex w-full flex-1 flex-col overflow-hidden">

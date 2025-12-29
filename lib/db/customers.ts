@@ -16,9 +16,23 @@ export type Customer = {
 
 export async function getCustomers() {
     const supabase = await createClient();
+
+    // Explicitly get current user and business context
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return [];
+
+    const { data: business } = await supabase
+        .from("businesses")
+        .select("id")
+        .eq("user_id", userData.user.id)
+        .single();
+
+    if (!business) return [];
+
     const { data, error } = await supabase
         .from("customers")
         .select("*")
+        .eq("business_id", business.id)
         .order("created_at", { ascending: false });
 
     if (error) {
@@ -27,6 +41,7 @@ export async function getCustomers() {
 
     return data as Customer[];
 }
+
 
 export async function getCustomer(id: string) {
     const supabase = await createClient();

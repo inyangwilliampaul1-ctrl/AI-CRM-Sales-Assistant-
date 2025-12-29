@@ -1,6 +1,7 @@
 import { getDashboardMetrics } from "@/lib/db/metrics";
 import { Users, Briefcase, Ticket, DollarSign } from "lucide-react";
 import { Suspense } from "react";
+import Link from "next/link";
 import { MetricCard } from "@/components/dashboard/metric-card";
 
 export default function DashboardPage() {
@@ -21,33 +22,43 @@ async function DashboardStats() {
 
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <MetricCard
-                title="Total Revenue"
-                value={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(metrics.totalRevenue)}
-                description="+20.1% from last month"
-                icon={DollarSign}
-            />
-            <MetricCard
-                title="Customers"
-                value={metrics.totalCustomers}
-                description="+180.1% from last month"
-                icon={Users}
-            />
-            <MetricCard
-                title="Active Deals"
-                value={metrics.totalDeals}
-                description="+19% from last month"
-                icon={Briefcase}
-            />
-            <MetricCard
-                title="Open Tickets"
-                value={metrics.activeTickets}
-                description="+201 since last hour"
-                icon={Ticket}
-            />
+
+            <Link href="/dashboard" className="block">
+                <MetricCard
+                    title="Total Revenue"
+                    value={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(metrics.totalRevenue)}
+                    description="+20.1% from last month"
+                    icon={DollarSign}
+                />
+            </Link>
+            <Link href="/dashboard/customers" className="block">
+                <MetricCard
+                    title="Customers"
+                    value={metrics.totalCustomers}
+                    description="+180.1% from last month"
+                    icon={Users}
+                />
+            </Link>
+            <Link href="/dashboard/deals" className="block">
+                <MetricCard
+                    title="Active Deals"
+                    value={metrics.totalDeals}
+                    description="+19% from last month"
+                    icon={Briefcase}
+                />
+            </Link>
+            <Link href="/dashboard/tickets" className="block">
+                <MetricCard
+                    title="Open Tickets"
+                    value={metrics.activeTickets}
+                    description="+201 since last hour"
+                    icon={Ticket}
+                />
+            </Link>
         </div>
     );
 }
+
 
 function DashboardSkeleton() {
     return (

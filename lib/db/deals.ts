@@ -19,6 +19,18 @@ export type Deal = {
 
 export async function getDeals() {
     const supabase = await createClient();
+
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return [];
+
+    const { data: business } = await supabase
+        .from("businesses")
+        .select("id")
+        .eq("user_id", userData.user.id)
+        .single();
+
+    if (!business) return [];
+
     const { data, error } = await supabase
         .from("deals")
         .select(`
@@ -28,6 +40,7 @@ export async function getDeals() {
         last_name
       )
     `)
+        .eq("business_id", business.id)
         .order("created_at", { ascending: false });
 
     if (error) {
@@ -36,6 +49,7 @@ export async function getDeals() {
 
     return data as Deal[];
 }
+
 
 export async function getDeal(id: string) {
     const supabase = await createClient();
