@@ -22,6 +22,25 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Features
+
+- **Dashboard**: Real-time sales metrics and overview.
+- **Customers**: Manage customer data, history, and engagement.
+- **Deals**: Kanban-style deal tracking.
+- **Tickets**: Customer support ticket system linked to CRM.
+- **AI Power**: Smart summaries, next action recommendations, and message drafting.
+
+### AI Fallback Mode
+
+This application includes a smart AI fallback system.
+
+- When OpenAI API quota is available, real AI responses are used.
+- When quota is exceeded or API is unavailable, the app switches to **Simulation Mode**.
+- Simulation Mode returns realistic mock AI responses to allow full UI and UX testing.
+
+This ensures reliability, demo safety, and uninterrupted user experience.
+
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
