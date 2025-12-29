@@ -44,7 +44,16 @@ export async function signup(prevState: any, formData: FormData) {
         return { error: "Supabase not configured. Check .env.local" };
     }
 
-    const { error } = await supabase.auth.signUp(data);
+    // Determine the site URL for redirection
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ||
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
+    const { error } = await supabase.auth.signUp({
+        ...data,
+        options: {
+            emailRedirectTo: `${siteUrl}/auth/callback`,
+        },
+    });
 
     if (error) {
         console.error("Signup error:", error.message);
