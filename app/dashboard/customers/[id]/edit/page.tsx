@@ -1,4 +1,5 @@
 import { CustomerForm } from "@/components/customers/customer-form";
+import { AiSummaryCard } from "@/components/ai/ai-summary-card";
 import { getCustomer } from "@/lib/db/customers";
 import { notFound } from "next/navigation";
 
@@ -15,9 +16,15 @@ export default async function EditCustomerPage({ params }: { params: Promise<{ i
             <div className="flex items-center justify-between space-y-2">
                 <h2 className="text-3xl font-bold tracking-tight">Edit Customer</h2>
             </div>
-            <div className="h-full flex-1 flex-col space-y-8 md:flex">
-                <CustomerForm customer={customer} />
+            <div className="grid gap-4 md:grid-cols-[1fr_300px] lg:grid-cols-3 lg:gap-8">
+                <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
+                    <CustomerForm customer={customer} />
+                </div>
+                <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
+                    <AiSummaryCard customerId={customer.id} />
+                </div>
             </div>
         </div>
     );
 }
+

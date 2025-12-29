@@ -109,3 +109,19 @@ export async function deleteDeal(id: string) {
         throw new Error(error.message);
     }
 }
+
+export async function getDealsByCustomer(customerId: string) {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+        .from("deals")
+        .select("*")
+        .eq("customer_id", customerId)
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return data as Deal[];
+}
+
