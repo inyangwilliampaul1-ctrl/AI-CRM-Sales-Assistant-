@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { signup } from "../actions";
 import { useActionState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const INDUSTRIES = [
     { value: "retail", label: "Retail" },
@@ -37,6 +39,54 @@ const selectClassName = "flex h-10 w-full rounded-md border border-input bg-back
 
 export default function RegisterPage() {
     const [state, formAction, isPending] = useActionState(signup, null);
+    const router = useRouter();
+
+    // If signup succeeded with email confirmation required, show success UI
+    const showEmailConfirmation = state?.success === true;
+
+    if (showEmailConfirmation) {
+        return (
+            <div className="flex flex-col items-center justify-center space-y-6 text-center px-4">
+                <div className="rounded-full bg-green-100 p-4">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-12 h-12 text-green-600"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
+                        />
+                    </svg>
+                </div>
+                <div className="space-y-2">
+                    <h1 className="text-2xl font-semibold tracking-tight">
+                        Check your email
+                    </h1>
+                    <p className="text-muted-foreground max-w-sm">
+                        We&apos;ve sent a verification link to your email address.
+                        Click the link to verify your account and access your dashboard.
+                    </p>
+                </div>
+                <div className="flex flex-col gap-2 w-full max-w-xs">
+                    <Button
+                        variant="outline"
+                        onClick={() => router.push("/login")}
+                        className="w-full"
+                    >
+                        Go to Login
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                        Didn&apos;t receive the email? Check your spam folder.
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col space-y-6">
