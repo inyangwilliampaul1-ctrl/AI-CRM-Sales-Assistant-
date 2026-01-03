@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { BackButton } from "@/components/ui/back-button";
 import { signout } from "../(auth)/actions";
 
 export default function DashboardLayout({
@@ -10,7 +11,8 @@ export default function DashboardLayout({
         <div className="flex min-h-screen flex-col space-y-6">
             <header className="sticky top-0 z-40 border-b bg-background">
                 <div className="container flex h-16 items-center justify-between py-4">
-                    <div className="flex gap-6 md:gap-10">
+                    <div className="flex items-center gap-4">
+                        <BackButton />
                         <a href="/" className="hidden items-center space-x-2 md:flex">
                             <span className="hidden font-bold sm:inline-block">
                                 AI CRM Sales Assistant
