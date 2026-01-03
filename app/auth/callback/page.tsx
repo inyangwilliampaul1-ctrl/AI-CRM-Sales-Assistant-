@@ -1,155 +1,178 @@
 /**
- * Auth Callback Page (Client Component)
+ * Auth Callback Page
  * 
- * This page handles the OAuth/Magic Link callback flow.
+ * This page handles the auth callback after email verification.
  * 
- * IMPORTANT: PKCE Flow Limitation
- * The PKCE code verifier is stored in browser cookies. If the user:
- * - Signs up on Device A (desktop)
- * - Opens the verification email on Device B (phone)
- * The code exchange will FAIL because the verifier is on Device A.
+ * FLOW:
+ * 1. User clicks email verification link
+ * 2. Supabase redirects to /auth/callback with tokens in URL
+ * 3. This page shows loading state
+ * 4. Supabase client automatically detects and processes tokens
+ * 5. Session is established
+ * 6. User is redirected to dashboard
  * 
- * This is a security feature, not a bug. Users must open the
- * verification link on the SAME device/browser where they signed up.
+ * MOBILE COMPATIBILITY:
+ * - Works with iOS Safari (which has strict cookie policies)
+ * - Works with in-app email browsers
+ * - Uses detectSessionInUrl for token processing
  */
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
-type AuthStatus = "loading" | "processing" | "success" | "error" | "cross-device";
+type AuthStatus = "initializing" | "processing" | "success" | "error";
 
 function AuthCallbackContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const [status, setStatus] = useState<AuthStatus>("loading");
+    const [status, setStatus] = useState<AuthStatus>("initializing");
     const [errorMessage, setErrorMessage] = useState<string>("");
+    const [attemptCount, setAttemptCount] = useState(0);
 
-    useEffect(() => {
-        const handleAuthCallback = async () => {
-            try {
-                const supabase = createClient();
+    const handleAuthCallback = useCallback(async () => {
+        try {
+            const supabase = createClient();
 
-                // Check for errors in URL params
-                const error = searchParams.get("error");
-                const errorDescription = searchParams.get("error_description");
+            // Check for explicit errors in URL
+            const urlError = searchParams.get("error");
+            const urlErrorDescription = searchParams.get("error_description");
 
-                if (error) {
-                    console.error("Auth callback error from URL:", error, errorDescription);
-                    setStatus("error");
-                    setErrorMessage(errorDescription || error);
-                    return;
-                }
+            if (urlError) {
+                console.error("Auth error from URL:", urlError, urlErrorDescription);
+                setStatus("error");
+                setErrorMessage(urlErrorDescription || urlError || "Authentication failed");
+                return;
+            }
 
-                // Get the code from URL (PKCE flow)
-                const code = searchParams.get("code");
+            setStatus("processing");
 
-                if (code) {
-                    setStatus("processing");
-                    console.log("Auth callback: Processing code exchange...");
+            // Get the auth code from URL (PKCE flow)
+            const code = searchParams.get("code");
 
-                    // Exchange the code for a session
-                    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+            if (code) {
+                console.log("Auth callback: Found code, exchanging for session...");
 
-                    if (exchangeError) {
-                        console.error("Code exchange error:", exchangeError.message);
+                // Exchange code for session
+                const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
-                        // Check if this is a PKCE verifier error (cross-device issue)
-                        if (exchangeError.message.includes("code verifier") ||
-                            exchangeError.message.includes("PKCE") ||
-                            exchangeError.message.includes("not found in storage")) {
-                            setStatus("cross-device");
-                            setErrorMessage("Please open this link on the same device/browser where you signed up.");
-                            return;
-                        }
+                if (exchangeError) {
+                    console.error("Code exchange error:", exchangeError.message);
 
-                        setStatus("error");
-                        setErrorMessage(exchangeError.message);
+                    // If exchange fails, try getting existing session
+                    // This handles cases where the token was already processed
+                    const { data: sessionData } = await supabase.auth.getSession();
+
+                    if (sessionData?.session) {
+                        console.log("Auth callback: Found existing session after exchange error");
+                        setStatus("success");
+                        setTimeout(() => router.replace("/dashboard"), 1000);
                         return;
                     }
 
-                    console.log("Auth callback: Code exchange successful");
-                    setStatus("success");
-
-                    // Redirect to dashboard after short delay to show success
-                    setTimeout(() => {
-                        router.replace("/dashboard");
-                    }, 1000);
-                    return;
-                }
-
-                // No code - check if there's a session from hash tokens
-                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-                if (sessionError) {
-                    console.error("Session error:", sessionError.message);
                     setStatus("error");
-                    setErrorMessage(sessionError.message);
+                    setErrorMessage(exchangeError.message);
                     return;
                 }
 
-                if (session) {
-                    console.log("Auth callback: Session already exists");
+                if (data?.session) {
+                    console.log("Auth callback: Session created successfully");
                     setStatus("success");
-                    setTimeout(() => {
-                        router.replace("/dashboard");
-                    }, 1000);
+                    setTimeout(() => router.replace("/dashboard"), 1000);
                     return;
                 }
-
-                // Listen for auth state changes (handles hash-based tokens)
-                setStatus("processing");
-                const { data: { subscription } } = supabase.auth.onAuthStateChange(
-                    (event: AuthChangeEvent, session: Session | null) => {
-                        console.log("Auth state changed:", event, !!session);
-
-                        if (event === "SIGNED_IN" && session) {
-                            setStatus("success");
-                            setTimeout(() => {
-                                router.replace("/dashboard");
-                            }, 1000);
-                        }
-                    }
-                );
-
-                // Timeout after 15 seconds
-                const timeout = setTimeout(() => {
-                    subscription.unsubscribe();
-                    if (status === "loading" || status === "processing") {
-                        setStatus("error");
-                        setErrorMessage("Authentication timed out. The link may have expired.");
-                    }
-                }, 15000);
-
-                // Cleanup
-                return () => {
-                    clearTimeout(timeout);
-                    subscription.unsubscribe();
-                };
-
-            } catch (err) {
-                console.error("Auth callback exception:", err);
-                setStatus("error");
-                setErrorMessage("An unexpected error occurred. Please try again.");
             }
-        };
 
+            // No code in URL - check for existing session
+            // This can happen if:
+            // 1. Session was already established
+            // 2. Tokens were in URL hash (implicit flow)
+            // 3. User navigated directly to callback
+            console.log("Auth callback: No code in URL, checking for session...");
+
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+            if (sessionError) {
+                console.error("Session check error:", sessionError.message);
+                setStatus("error");
+                setErrorMessage(sessionError.message);
+                return;
+            }
+
+            if (session) {
+                console.log("Auth callback: Session found");
+                setStatus("success");
+                setTimeout(() => router.replace("/dashboard"), 1000);
+                return;
+            }
+
+            // No session yet - wait for auth state change
+            // This handles async token processing
+            console.log("Auth callback: No session yet, waiting for auth state change...");
+
+            const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
+                console.log("Auth state change:", event, !!session);
+
+                if (event === "SIGNED_IN" && session) {
+                    subscription.unsubscribe();
+                    setStatus("success");
+                    setTimeout(() => router.replace("/dashboard"), 1000);
+                } else if (event === "TOKEN_REFRESHED" && session) {
+                    subscription.unsubscribe();
+                    setStatus("success");
+                    setTimeout(() => router.replace("/dashboard"), 1000);
+                }
+            });
+
+            // Retry logic - wait a bit then check again
+            // This helps with slow network/processing
+            if (attemptCount < 3) {
+                setTimeout(() => {
+                    setAttemptCount(prev => prev + 1);
+                }, 2000);
+            } else {
+                // After 3 attempts (6 seconds), show manual retry option
+                subscription.unsubscribe();
+                setStatus("error");
+                setErrorMessage("Session verification is taking longer than expected. Please try refreshing the page or logging in manually.");
+            }
+
+            return () => subscription.unsubscribe();
+
+        } catch (err) {
+            console.error("Auth callback exception:", err);
+            setStatus("error");
+            setErrorMessage("An unexpected error occurred. Please try again.");
+        }
+    }, [router, searchParams, attemptCount]);
+
+    useEffect(() => {
         handleAuthCallback();
-    }, [router, searchParams]);
+    }, [handleAuthCallback]);
 
-    // Loading State
-    if (status === "loading" || status === "processing") {
+    // Initializing State
+    if (status === "initializing") {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-background">
                 <div className="flex flex-col items-center space-y-4">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                    <h2 className="text-xl font-semibold">
-                        {status === "loading" ? "Preparing..." : "Verifying your account..."}
-                    </h2>
+                    <h2 className="text-xl font-semibold">Preparing...</h2>
+                </div>
+            </div>
+        );
+    }
+
+    // Processing State
+    if (status === "processing") {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+                <div className="flex flex-col items-center space-y-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                    <h2 className="text-xl font-semibold">Verifying your account...</h2>
                     <p className="text-muted-foreground text-sm">
-                        Please wait while we complete authentication.
+                        This usually takes just a moment.
                     </p>
                 </div>
             </div>
@@ -185,52 +208,7 @@ function AuthCallbackContent() {
         );
     }
 
-    // Cross-Device Error State (Special handling for PKCE issue)
-    if (status === "cross-device") {
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-                <div className="flex flex-col items-center space-y-4 max-w-md text-center px-4">
-                    <div className="rounded-full bg-amber-100 p-3">
-                        <svg
-                            className="h-8 w-8 text-amber-600"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                            />
-                        </svg>
-                    </div>
-                    <h2 className="text-xl font-semibold text-amber-600">Different Device Detected</h2>
-                    <p className="text-muted-foreground text-sm">
-                        For security reasons, please open the verification link on the <strong>same device and browser</strong> where you created your account.
-                    </p>
-                    <div className="bg-muted/50 rounded-lg p-4 text-left text-sm space-y-2">
-                        <p className="font-medium">How to fix this:</p>
-                        <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                            <li>Open your email on your original device</li>
-                            <li>Click the verification link from there</li>
-                            <li>You&apos;ll be signed in automatically</li>
-                        </ol>
-                    </div>
-                    <div className="flex gap-4 mt-4">
-                        <a
-                            href="/login"
-                            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                        >
-                            Go to Login
-                        </a>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    // Generic Error State
+    // Error State
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-background">
             <div className="flex flex-col items-center space-y-4 max-w-md text-center px-4">
@@ -249,14 +227,20 @@ function AuthCallbackContent() {
                         />
                     </svg>
                 </div>
-                <h2 className="text-xl font-semibold text-red-600">Verification Failed</h2>
+                <h2 className="text-xl font-semibold text-red-600">Verification Issue</h2>
                 <p className="text-muted-foreground text-sm">
                     {errorMessage || "We couldn't verify your account. The link may have expired."}
                 </p>
-                <div className="flex gap-4 mt-4">
+                <div className="flex flex-col gap-3 mt-4 w-full max-w-xs">
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                    >
+                        Try Again
+                    </button>
                     <a
                         href="/login"
-                        className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                        className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent"
                     >
                         Go to Login
                     </a>
@@ -284,7 +268,6 @@ function LoadingFallback() {
     );
 }
 
-// Default export wrapped in Suspense to handle useSearchParams
 export default function AuthCallbackPage() {
     return (
         <Suspense fallback={<LoadingFallback />}>
