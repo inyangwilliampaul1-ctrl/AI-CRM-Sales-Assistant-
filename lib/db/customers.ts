@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getOrCreateBusiness } from "@/lib/db/business";
 
 export type Customer = {
     id: string;
@@ -61,22 +62,12 @@ export async function getCustomer(id: string) {
 export async function createCustomer(customer: Omit<Customer, "id" | "created_at" | "updated_at" | "business_id">) {
     const supabase = await createClient();
 
-    // Get current user to verify business ownership or simpler: relying on RLS + trigger if we had one for auto-business-id, 
-    // but usually we need to fetch business_id or let RLS handle it if we set it.
-    // Wait, our RLS checks for business_id. We need to insert with the correct business_id.
-    // For the MVP, we assume the user has one business.
-
+    // Get current user to verify authentication
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData.user) throw new Error("Unauthorized");
 
-    // Fetch the business ID for this user
-    const { data: business, error: businessError } = await supabase
-        .from("businesses")
-        .select("id")
-        .eq("user_id", userData.user.id)
-        .single();
-
-    if (businessError || !business) throw new Error("Business not found");
+    // Get or create business for this user (auto-creates if missing)
+    const business = await getOrCreateBusiness();
 
     const { data, error } = await supabase
         .from("customers")

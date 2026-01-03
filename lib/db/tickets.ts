@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getOrCreateBusiness } from "@/lib/db/business";
 
 export type Ticket = {
     id: string;
@@ -77,13 +78,8 @@ export async function createTicket(ticket: Omit<Ticket, "id" | "created_at" | "u
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData.user) throw new Error("Unauthorized");
 
-    const { data: business, error: businessError } = await supabase
-        .from("businesses")
-        .select("id")
-        .eq("user_id", userData.user.id)
-        .single();
-
-    if (businessError || !business) throw new Error("Business not found");
+    // Get or create business for this user (auto-creates if missing)
+    const business = await getOrCreateBusiness();
 
     const { data, error } = await supabase
         .from("tickets")
