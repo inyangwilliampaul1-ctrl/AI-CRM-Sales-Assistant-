@@ -3,18 +3,14 @@
  * 
  * This page handles the OAuth/Magic Link callback flow.
  * 
- * FLOW:
- * 1. User clicks email verification link
- * 2. Supabase redirects to /auth/callback?code=xxx (PKCE) or with hash tokens
- * 3. This page shows a loading spinner (prevents blank screen)
- * 4. We exchange the code for a session OR process hash tokens
- * 5. Session cookies are set
- * 6. User is redirected to /dashboard
+ * IMPORTANT: PKCE Flow Limitation
+ * The PKCE code verifier is stored in browser cookies. If the user:
+ * - Signs up on Device A (desktop)
+ * - Opens the verification email on Device B (phone)
+ * The code exchange will FAIL because the verifier is on Device A.
  * 
- * WHY CLIENT COMPONENT?
- * - URL hash (#access_token=...) is only accessible client-side
- * - We can show loading/error states for better UX
- * - Supabase browser client handles auth state changes
+ * This is a security feature, not a bug. Users must open the
+ * verification link on the SAME device/browser where they signed up.
  */
 "use client";
 
@@ -23,7 +19,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
-type AuthStatus = "loading" | "processing" | "success" | "error";
+type AuthStatus = "loading" | "processing" | "success" | "error" | "cross-device";
 
 function AuthCallbackContent() {
     const router = useRouter();
@@ -59,6 +55,16 @@ function AuthCallbackContent() {
 
                     if (exchangeError) {
                         console.error("Code exchange error:", exchangeError.message);
+
+                        // Check if this is a PKCE verifier error (cross-device issue)
+                        if (exchangeError.message.includes("code verifier") ||
+                            exchangeError.message.includes("PKCE") ||
+                            exchangeError.message.includes("not found in storage")) {
+                            setStatus("cross-device");
+                            setErrorMessage("Please open this link on the same device/browser where you signed up.");
+                            return;
+                        }
+
                         setStatus("error");
                         setErrorMessage(exchangeError.message);
                         return;
@@ -75,7 +81,6 @@ function AuthCallbackContent() {
                 }
 
                 // No code - check if there's a session from hash tokens
-                // This handles the implicit flow where tokens are in the URL hash
                 const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
                 if (sessionError) {
@@ -180,7 +185,52 @@ function AuthCallbackContent() {
         );
     }
 
-    // Error State
+    // Cross-Device Error State (Special handling for PKCE issue)
+    if (status === "cross-device") {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+                <div className="flex flex-col items-center space-y-4 max-w-md text-center px-4">
+                    <div className="rounded-full bg-amber-100 p-3">
+                        <svg
+                            className="h-8 w-8 text-amber-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                            />
+                        </svg>
+                    </div>
+                    <h2 className="text-xl font-semibold text-amber-600">Different Device Detected</h2>
+                    <p className="text-muted-foreground text-sm">
+                        For security reasons, please open the verification link on the <strong>same device and browser</strong> where you created your account.
+                    </p>
+                    <div className="bg-muted/50 rounded-lg p-4 text-left text-sm space-y-2">
+                        <p className="font-medium">How to fix this:</p>
+                        <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                            <li>Open your email on your original device</li>
+                            <li>Click the verification link from there</li>
+                            <li>You&apos;ll be signed in automatically</li>
+                        </ol>
+                    </div>
+                    <div className="flex gap-4 mt-4">
+                        <a
+                            href="/login"
+                            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                        >
+                            Go to Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Generic Error State
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-background">
             <div className="flex flex-col items-center space-y-4 max-w-md text-center px-4">
